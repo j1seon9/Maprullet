@@ -1,4 +1,4 @@
-// 원본에 있던 전체 maps 배열
+// 맵 데이터 (nocookie.net 이미지 사용)
 const maps = [
   {
     id: "어센트",
@@ -86,50 +86,116 @@ const maps = [
   }
 ];
 
-document.addEventListener('DOMContentLoaded', function () {
-  const mapPoolContainer = document.getElementById('mapPool');
-  const mapCountElement = document.getElementById('mapCount');
-  const currentMapImage = document.getElementById('currentMapImage');
-  const currentMapName = document.getElementById('currentMapName');
-  const currentMapDescription = document.getElementById('currentMapDescription');
-  const randomizeButton = document.getElementById('randomizeButton');
-  const animationSpeedSlider = document.getElementById('animationSpeed');
-  const speedValueDisplay = document.getElementById('speedValue');
-  const mapDisplay = document.getElementById('mapDisplay');
+// DOM 요소
+const mapPoolContainer = document.getElementById('mapPool');
+const mapCountElement = document.getElementById('mapCount');
+const currentMapImage = document.getElementById('currentMapImage');
+const currentMapName = document.getElementById('currentMapName');
+const currentMapDescription = document.getElementById('currentMapDescription');
+const randomizeButton = document.getElementById('randomizeButton');
+const animationSpeedSlider = document.getElementById('animationSpeed');
+const speedValueDisplay = document.getElementById('speedValue');
+const mapDisplay = document.getElementById('mapDisplay');
 
-  let isAnimating = false;
-  let animationInterval;
+let isAnimating = false;
+let animationInterval;
 
-  function updateMapCount() {
-    const enabledCount = maps.filter(map => map.enabled).length;
-    mapCountElement.textContent = `${enabledCount}개의 맵이 활성화됐습니다`;
+// 맵 개수 업데이트
+function updateMapCount() {
+  const enabledCount = maps.filter(map => map.enabled).length;
+  mapCountElement.textContent = `${enabledCount}개의 맵이 활성화됐습니다`;
+}
+
+// 맵 토글 UI 생성
+function generateMapToggles() {
+  mapPoolContainer.innerHTML = '';
+  maps.forEach(map => {
+    const mapToggleItem = document.createElement('div');
+    mapToggleItem.className = 'flex items-center justify-between p-3 bg-[#131e29] rounded-lg';
+
+    mapToggleItem.innerHTML = `
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded overflow-hidden">
+          <img src="${map.image}" alt="${map.name}" class="w-full h-full object-cover">
+        </div>
+        <span class="font-medium">${map.name}</span>
+      </div>
+      <label class="map-switch">
+        <input type="checkbox" data-map-id="${map.id}" ${map.enabled ? 'checked' : ''}>
+        <span class="map-slider"></span>
+      </label>
+    `;
+
+    mapPoolContainer.appendChild(mapToggleItem);
+  });
+
+  document.querySelectorAll('.map-switch input').forEach(toggle => {
+    toggle.addEventListener('change', function () {
+      const mapId = this.getAttribute('data-map-id');
+      const mapIndex = maps.findIndex(m => m.id === mapId);
+      if (mapIndex !== -1) {
+        maps[mapIndex].enabled = this.checked;
+        updateMapCount();
+      }
+    });
+  });
+
+  updateMapCount();
+}
+
+// 초기화
+generateMapToggles();
+speedValueDisplay.textContent = animationSpeedSlider.value;
+
+// 슬라이더 이벤트
+animationSpeedSlider.addEventListener('input', function () {
+  speedValueDisplay.textContent = this.value;
+});
+
+// 룰렛 실행
+randomizeButton.addEventListener('click', function () {
+  if (isAnimating) return;
+
+  const enabledMaps = maps.filter(map => map.enabled);
+  if (enabledMaps.length === 0) {
+    alert('최소한 하나의 맵을 넣어야합니다');
+    return;
   }
 
-  function generateMapToggles() {
-    mapPoolContainer.innerHTML = '';
-    maps.forEach(map => {
-      const mapToggleItem = document.createElement('div');
-      mapToggleItem.className = 'flex items-center justify-between p-3 bg-[#131e29] rounded-lg';
+  isAnimating = true;
+  randomizeButton.disabled = true;
+  randomizeButton.classList.remove('pulse');
 
-      mapToggleItem.innerHTML = `
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded overflow-hidden">
-            <img src="${map.image}" alt="${map.name}" class="w-full h-full object-cover">
-          </div>
-          <span class="font-medium">${map.name}</span>
-        </div>
-        <label class="map-switch">
-          <input type="checkbox" data-map-id="${map.id}" ${map.enabled ? 'checked' : ''}>
-          <span class="map-slider"></span>
-        </label>
-      `;
+  mapDisplay.classList.remove('map-reveal');
+  void mapDisplay.offsetWidth;
 
-      mapPoolContainer.appendChild(mapToggleItem);
-    });
+  const speed = parseInt(animationSpeedSlider.value);
+  const animationDuration = 5000 / speed; 
+  const iterations = 10 + speed; 
+  let counter = 0;
 
-    document.querySelectorAll('.map-switch input').forEach(toggle => {
-      toggle.addEventListener('change', function () {
-        const mapId = this.getAttribute('data-map-id');
-        const mapIndex = maps.findIndex(m => m.id === mapId);
-        if (mapIndex !== -1) {
-          maps[mapIndex].
+  animationInterval = setInterval(() => {
+    const randomIndex = Math.floor(Math.random() * enabledMaps.length);
+    const randomMap = enabledMaps[randomIndex];
+    currentMapImage.src = randomMap.image;
+    currentMapName.textContent = randomMap.name;
+    currentMapDescription.textContent = randomMap.description;
+
+    counter++;
+    if (counter >= iterations) {
+      clearInterval(animationInterval);
+      isAnimating = false;
+      randomizeButton.disabled = false;
+      mapDisplay.classList.add('map-reveal');
+      setTimeout(() => {
+        randomizeButton.classList.add('pulse');
+      }, 1000);
+    }
+  }, animationDuration / iterations);
+});
+
+// 초기 맵 표시
+const initialMap = maps[0];
+currentMapImage.src = initialMap.image;
+currentMapName.textContent = initialMap.name;
+currentMapDescription.textContent = initialMap.description;
