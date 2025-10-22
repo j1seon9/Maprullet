@@ -4,7 +4,7 @@ const maps = [
     id: "어센트",
     name: "어센트",
     description: "어센트에서는 소규모 진지전과 소모전을 벌일 수 있는 개방 구역을 중심으로 두 지점이 나뉘어 있습니다. 각 지점은 해체 불가능한 폭탄 문으로 수비를 강화할 수 있으며, 일단 문이 닫히면 문을 파괴하거나 다른 길을 찾아야 합니다. 가능한 한 많은 지역을 지키세요.",
-    image: "https://static.wikia.nocookie.net/valorant/images/e/e7/Loading_Screen_Ascent.png/revision/latest/scale-to-width-down/1000?cb=20200607180020",
+    ![asent](https://photos.app.goo.gl/2W1aHXpoMwmfVTGq9),
     enabled: true
   },
   {
